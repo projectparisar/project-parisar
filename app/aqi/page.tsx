@@ -121,6 +121,18 @@ const mapSupabaseToCity = (data: CityData): City => ({
   updatedAt: data.updated_at
 })
 
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
+}
+
 export default function AQIDashboard() {
   const [cities, setCities] = useState<City[]>([])
   const [loading, setLoading] = useState(true)
@@ -129,10 +141,27 @@ export default function AQIDashboard() {
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
   const [sortBy, setSortBy] = useState<'aqi-high' | 'aqi-low' | 'name'>('aqi-high')
   const [isHydrated, setIsHydrated] = useState(false)
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const mapRef = useRef<any>(null)
 
   useEffect(() => {
     setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          })
+        },
+        (error) => {
+          console.error('Geolocation error:', error)
+        }
+      )
+    }
   }, [])
 
   useEffect(() => {
@@ -167,6 +196,17 @@ export default function AQIDashboard() {
     const interval = setInterval(fetchCities, 60 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (userLocation && cities.length > 0 && !selectedCity) {
+      const nearestCity = cities.reduce((nearest, city) => {
+        const distance = calculateDistance(userLocation.lat, userLocation.lng, city.lat, city.lng)
+        const nearestDistance = calculateDistance(userLocation.lat, userLocation.lng, nearest.lat, nearest.lng)
+        return distance < nearestDistance ? city : nearest
+      })
+      setSelectedCity(nearestCity)
+    }
+  }, [userLocation, cities, selectedCity])
 
   useEffect(() => {
     if (selectedCity && mapRef.current && isHydrated) {

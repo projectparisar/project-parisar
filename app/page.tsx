@@ -28,10 +28,8 @@ export default function Home() {
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-xs font-medium tracking-widest uppercase text-neutral-400">
-            <Link href="#" className="hover:text-white transition-colors"> stations </Link>
-            <Link href="#" className="hover:text-white transition-colors"> pollution map </Link>
-            <Link href="#" className="hover:text-white transition-colors"> cities </Link>
-          </div>
+            <Link href="/aqi" className="hover:text-white transition-colors"> Air Quality </Link>
+           </div>
 
           <button className="bg-white text-black px-6 py-2 rounded-full text-xs font-bold tracking-wide hover:bg-emerald-400 transition-colors">
             TRACK NOW
