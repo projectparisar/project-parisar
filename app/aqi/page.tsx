@@ -168,11 +168,7 @@ export default function AQIDashboard() {
     const fetchCities = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/get/aqi', {
-          headers: {
-            'Cache-Control': 'public, max-age=3600',
-          },
-        })
+        const response = await fetch('/api/get/aqi')
         
         if (!response.ok) {
           throw new Error('Failed to fetch AQI data')
